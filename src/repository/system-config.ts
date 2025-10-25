@@ -88,13 +88,7 @@ function createFallbackSettings(): SystemSettings {
 export async function getSystemSettings(): Promise<SystemSettings> {
   try {
     const [settings] = await db
-      .select({
-        id: systemSettings.id,
-        siteTitle: systemSettings.siteTitle,
-        allowGlobalUsageView: systemSettings.allowGlobalUsageView,
-        createdAt: systemSettings.createdAt,
-        updatedAt: systemSettings.updatedAt,
-      })
+      .select()
       .from(systemSettings)
       .limit(1);
 
@@ -109,13 +103,7 @@ export async function getSystemSettings(): Promise<SystemSettings> {
         allowGlobalUsageView: false,
       })
       .onConflictDoNothing()
-      .returning({
-        id: systemSettings.id,
-        siteTitle: systemSettings.siteTitle,
-        allowGlobalUsageView: systemSettings.allowGlobalUsageView,
-        createdAt: systemSettings.createdAt,
-        updatedAt: systemSettings.updatedAt,
-      });
+      .returning();
 
     if (created) {
       return toSystemSettings(created);
@@ -123,13 +111,7 @@ export async function getSystemSettings(): Promise<SystemSettings> {
 
     // 如果并发导致没有返回，重新查询一次
     const [fallback] = await db
-      .select({
-        id: systemSettings.id,
-        siteTitle: systemSettings.siteTitle,
-        allowGlobalUsageView: systemSettings.allowGlobalUsageView,
-        createdAt: systemSettings.createdAt,
-        updatedAt: systemSettings.updatedAt,
-      })
+      .select()
       .from(systemSettings)
       .limit(1);
 
@@ -156,21 +138,53 @@ export async function updateSystemSettings(
   const current = await getSystemSettings();
 
   try {
+    // 构建更新对象（只包含传入的字段）
+    const updateData: Record<string, unknown> = {
+      updatedAt: new Date(),
+    };
+
+    // 基础配置
+    if (payload.siteTitle !== undefined) {
+      updateData.siteTitle = payload.siteTitle;
+    }
+    if (payload.allowGlobalUsageView !== undefined) {
+      updateData.allowGlobalUsageView = payload.allowGlobalUsageView;
+    }
+
+    // 实时调度配置
+    if (payload.enableRealtimeSchedule !== undefined) {
+      updateData.enableRealtimeSchedule = payload.enableRealtimeSchedule;
+    }
+    if (payload.scheduleIntervalSeconds !== undefined) {
+      updateData.scheduleIntervalSeconds = payload.scheduleIntervalSeconds;
+    }
+    if (payload.explorationRate !== undefined) {
+      updateData.explorationRate = payload.explorationRate;
+    }
+    if (payload.circuitRecoveryWeightPercent !== undefined) {
+      updateData.circuitRecoveryWeightPercent = payload.circuitRecoveryWeightPercent;
+    }
+    if (payload.circuitRecoveryObservationCount !== undefined) {
+      updateData.circuitRecoveryObservationCount = payload.circuitRecoveryObservationCount;
+    }
+    if (payload.maxWeightAdjustmentPercent !== undefined) {
+      updateData.maxWeightAdjustmentPercent = payload.maxWeightAdjustmentPercent;
+    }
+    if (payload.shortTermWindowMinutes !== undefined) {
+      updateData.shortTermWindowMinutes = payload.shortTermWindowMinutes;
+    }
+    if (payload.mediumTermWindowMinutes !== undefined) {
+      updateData.mediumTermWindowMinutes = payload.mediumTermWindowMinutes;
+    }
+    if (payload.longTermWindowMinutes !== undefined) {
+      updateData.longTermWindowMinutes = payload.longTermWindowMinutes;
+    }
+
     const [updated] = await db
       .update(systemSettings)
-      .set({
-        siteTitle: payload.siteTitle,
-        allowGlobalUsageView: payload.allowGlobalUsageView,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(systemSettings.id, current.id))
-      .returning({
-        id: systemSettings.id,
-        siteTitle: systemSettings.siteTitle,
-        allowGlobalUsageView: systemSettings.allowGlobalUsageView,
-        createdAt: systemSettings.createdAt,
-        updatedAt: systemSettings.updatedAt,
-      });
+      .returning();
 
     if (!updated) {
       throw new Error("更新系统设置失败");
