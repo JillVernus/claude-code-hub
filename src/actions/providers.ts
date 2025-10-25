@@ -119,7 +119,9 @@ export async function getProviders(): Promise<ProviderDisplay[]> {
         // 自动调度基准值
         baseWeight: provider.baseWeight,
         basePriority: provider.basePriority,
-        lastScheduleTime: provider.lastScheduleTime ? provider.lastScheduleTime.toISOString() : null,
+        lastScheduleTime: provider.lastScheduleTime
+          ? provider.lastScheduleTime.toISOString()
+          : null,
         tpm: provider.tpm,
         rpm: provider.rpm,
         rpd: provider.rpd,
@@ -347,7 +349,7 @@ export async function resetProvider(providerId: number): Promise<ActionResult> {
     }
 
     const provider = await resetProviderToBaseline(providerId);
-    
+
     if (!provider) {
       return { ok: false, error: "供应商不存在" };
     }

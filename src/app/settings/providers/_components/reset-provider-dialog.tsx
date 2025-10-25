@@ -74,12 +74,7 @@ export function ResetProviderDialog({
   if (mode === "single") {
     return (
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowConfirm(true)}
-          disabled={loading}
-        >
+        <Button variant="ghost" size="sm" onClick={() => setShowConfirm(true)} disabled={loading}>
           <RotateCcw className="h-4 w-4" />
         </Button>
         <AlertDialogContent>
@@ -92,9 +87,7 @@ export function ResetProviderDialog({
               <p className="text-sm text-muted-foreground">
                 • 如果没有基准值，将使用当前值作为基准值
               </p>
-              <p className="text-sm text-muted-foreground">
-                • 此操作会立即生效，影响流量分配
-              </p>
+              <p className="text-sm text-muted-foreground">• 此操作会立即生效，影响流量分配</p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -112,11 +105,7 @@ export function ResetProviderDialog({
   // mode === "all"
   return (
     <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-      <Button
-        variant="outline"
-        onClick={() => setShowConfirm(true)}
-        disabled={loading}
-      >
+      <Button variant="outline" onClick={() => setShowConfirm(true)} disabled={loading}>
         <RotateCcw className="h-4 w-4 mr-2" />
         重置所有供应商
       </Button>

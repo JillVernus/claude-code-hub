@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Loader2, TrendingUp, TrendingDown, Minus, Activity, AlertCircle } from "lucide-react";
 import { getProvidersAnalytics, getScheduleHistory } from "@/actions/provider-analytics";
 import { AutoScheduleDialog } from "./auto-schedule-dialog";
@@ -15,7 +22,10 @@ interface ProviderAnalyticsProps {
   initialSummary?: AnalyticsSummary;
 }
 
-export function ProviderAnalyticsView({ initialAnalytics, initialSummary }: ProviderAnalyticsProps) {
+export function ProviderAnalyticsView({
+  initialAnalytics,
+  initialSummary,
+}: ProviderAnalyticsProps) {
   const [analytics, setAnalytics] = useState<ProviderAnalytics[]>(initialAnalytics || []);
   const [summary, setSummary] = useState<AnalyticsSummary | null>(initialSummary || null);
   const [scheduleHistory, setScheduleHistory] = useState<ScheduleLog[]>([]);
@@ -154,7 +164,9 @@ export function ProviderAnalyticsView({ initialAnalytics, initialSummary }: Prov
                       <Badge variant="outline">W: {provider.weight}</Badge>
                       <Badge variant="secondary">P: {provider.priority}</Badge>
                       {provider.isAdjusted && (
-                        <Badge variant="default" className="text-xs">已调整</Badge>
+                        <Badge variant="default" className="text-xs">
+                          已调整
+                        </Badge>
                       )}
                     </div>
                   </TableCell>
@@ -188,9 +200,7 @@ export function ProviderAnalyticsView({ initialAnalytics, initialSummary }: Prov
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={provider.performanceScore > 60 ? "default" : "destructive"}
-                    >
+                    <Badge variant={provider.performanceScore > 60 ? "default" : "destructive"}>
                       {provider.performanceScore.toFixed(1)}
                     </Badge>
                   </TableCell>
@@ -239,7 +249,9 @@ function MetricCard({
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className={`text-2xl font-bold ${variant === "destructive" ? "text-destructive" : ""}`}>
+        <div
+          className={`text-2xl font-bold ${variant === "destructive" ? "text-destructive" : ""}`}
+        >
           {value}
         </div>
         <p className="text-xs text-muted-foreground">{description}</p>

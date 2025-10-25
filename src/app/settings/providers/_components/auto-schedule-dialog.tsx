@@ -94,9 +94,7 @@ export function AutoScheduleDialog({ mode, onComplete }: AutoScheduleDialogProps
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {mode === "preview" ? "调度方案预览" : "确认执行调度"}
-          </DialogTitle>
+          <DialogTitle>{mode === "preview" ? "调度方案预览" : "确认执行调度"}</DialogTitle>
           <DialogDescription>
             {mode === "preview"
               ? "以下是基于性能分析生成的调度建议，不会实际修改配置"
@@ -193,8 +191,8 @@ function DecisionCard({ decision }: { decision: ScheduleDecision }) {
                     decision.afterState.weight > decision.beforeState.weight
                       ? "default"
                       : decision.afterState.weight < decision.beforeState.weight
-                      ? "destructive"
-                      : "outline"
+                        ? "destructive"
+                        : "outline"
                   }
                 >
                   权重: {decision.afterState.weight}

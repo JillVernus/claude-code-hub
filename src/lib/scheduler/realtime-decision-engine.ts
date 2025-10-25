@@ -39,7 +39,10 @@ export class RealtimeDecisionEngine {
    * @param config MAB 配置
    * @param dryRun 是否为预演模式（不实际修改数据库）
    */
-  static async execute(config: MABConfig, dryRun: boolean = false): Promise<RealtimeScheduleResult> {
+  static async execute(
+    config: MABConfig,
+    dryRun: boolean = false
+  ): Promise<RealtimeScheduleResult> {
     const executionTime = new Date();
 
     try {
@@ -53,9 +56,9 @@ export class RealtimeDecisionEngine {
 
       // 2. 获取多时间窗口性能数据（✅ 修复：从配置读取，不再硬编码）
       const providers = await getProviderMultiWindowAnalytics(
-        settings.shortTermWindowMinutes ?? 60,  // 短期窗口
+        settings.shortTermWindowMinutes ?? 60, // 短期窗口
         settings.mediumTermWindowMinutes ?? 360, // 中期窗口
-        settings.longTermWindowMinutes ?? 1440  // 长期窗口
+        settings.longTermWindowMinutes ?? 1440 // 长期窗口
       );
 
       if (providers.length === 0) {

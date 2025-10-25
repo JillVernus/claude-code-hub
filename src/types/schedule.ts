@@ -3,10 +3,16 @@
  */
 
 // 调度决策行动类型
-export type ScheduleAction = 'promote' | 'demote' | 'maintain' | 'recover' | 'circuit_penalty' | 'explore';
+export type ScheduleAction =
+  | "promote"
+  | "demote"
+  | "maintain"
+  | "recover"
+  | "circuit_penalty"
+  | "explore";
 
 // 熔断器状态
-export type CircuitState = 'closed' | 'open' | 'half-open';
+export type CircuitState = "closed" | "open" | "half-open";
 
 /**
  * 供应商性能指标

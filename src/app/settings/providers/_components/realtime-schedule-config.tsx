@@ -149,9 +149,7 @@ export function RealtimeScheduleConfig() {
       <Card>
         <CardHeader>
           <CardTitle>实时调度配置</CardTitle>
-          <CardDescription>
-            配置 Multi-Armed Bandit 算法参数，控制自动调度行为
-          </CardDescription>
+          <CardDescription>配置 Multi-Armed Bandit 算法参数，控制自动调度行为</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* 实验性功能警告 */}
@@ -160,17 +158,14 @@ export function RealtimeScheduleConfig() {
             <AlertTitle>⚠️ 实验性功能</AlertTitle>
             <AlertDescription className="space-y-2 text-sm">
               <p>
-                实时调度是<strong>实验性功能</strong>，将每 {config.scheduleIntervalSeconds} 秒自动调整供应商权重和优先级。
+                实时调度是<strong>实验性功能</strong>，将每 {config.scheduleIntervalSeconds}{" "}
+                秒自动调整供应商权重和优先级。
               </p>
               <p>
                 • 开启后将<strong>重置所有供应商到基准配置</strong>，然后完全自动化运行
               </p>
-              <p>
-                • 使用 Multi-Armed Bandit 算法平衡探索与利用
-              </p>
-              <p>
-                • 您可以随时关闭此功能，但建议先在测试环境验证
-              </p>
+              <p>• 使用 Multi-Armed Bandit 算法平衡探索与利用</p>
+              <p>• 您可以随时关闭此功能，但建议先在测试环境验证</p>
             </AlertDescription>
           </Alert>
 
@@ -414,18 +409,11 @@ export function RealtimeScheduleConfig() {
 
           {/* 操作按钮 */}
           <div className="flex justify-end gap-2 pt-4">
-            <Button
-              variant="outline"
-              onClick={handleResetToDefault}
-              disabled={saving}
-            >
+            <Button variant="outline" onClick={handleResetToDefault} disabled={saving}>
               <RotateCcw className="h-4 w-4 mr-2" />
               恢复默认值
             </Button>
-            <Button
-              onClick={handleSaveConfig}
-              disabled={!config.enableRealtimeSchedule || saving}
-            >
+            <Button onClick={handleSaveConfig} disabled={!config.enableRealtimeSchedule || saving}>
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               保存配置
             </Button>

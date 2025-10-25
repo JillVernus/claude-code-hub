@@ -4,13 +4,15 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Loader2,
@@ -179,7 +181,8 @@ export function RealtimeScheduleMonitor() {
               <div className="flex items-center gap-2">
                 <History className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  已执行: <span className="font-mono font-semibold">{status.totalExecutions}</span> 次
+                  已执行: <span className="font-mono font-semibold">{status.totalExecutions}</span>{" "}
+                  次
                 </span>
               </div>
             </div>
@@ -206,7 +209,12 @@ export function RealtimeScheduleMonitor() {
                 <p className="font-mono text-sm">
                   {new Date(status.lastExecutionTime).toLocaleString("zh-CN")}
                   <span className="text-muted-foreground ml-2">
-                    ({formatDistanceToNow(new Date(status.lastExecutionTime), { locale: zhCN, addSuffix: true })})
+                    (
+                    {formatDistanceToNow(new Date(status.lastExecutionTime), {
+                      locale: zhCN,
+                      addSuffix: true,
+                    })}
+                    )
                   </span>
                 </p>
               </div>
@@ -471,9 +479,7 @@ export function RealtimeScheduleMonitor() {
                           )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {log.dryRun && <Badge variant="outline">预演</Badge>}
-                    </TableCell>
+                    <TableCell>{log.dryRun && <Badge variant="outline">预演</Badge>}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

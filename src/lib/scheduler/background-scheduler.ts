@@ -135,7 +135,7 @@ class BackgroundScheduler {
     logger.info("[BackgroundScheduler] Stopping");
 
     if (this.state.intervalId) {
-      clearTimeout(this.state.intervalId);  // ✅ 使用 clearTimeout 替代 clearInterval
+      clearTimeout(this.state.intervalId); // ✅ 使用 clearTimeout 替代 clearInterval
       this.state.intervalId = null;
     }
 

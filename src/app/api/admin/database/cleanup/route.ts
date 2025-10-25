@@ -28,10 +28,7 @@ export async function POST(request: Request) {
     const { daysAgo } = body;
 
     if (![7, 30, 90].includes(daysAgo)) {
-      return Response.json(
-        { error: "无效的清理范围，请选择 7、30 或 90 天" },
-        { status: 400 }
-      );
+      return Response.json({ error: "无效的清理范围，请选择 7、30 或 90 天" }, { status: 400 });
     }
 
     // 3. 计算时间阈值
@@ -49,12 +46,7 @@ export async function POST(request: Request) {
     const [countResult] = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(messageRequest)
-      .where(
-        and(
-          lt(messageRequest.createdAt, threshold),
-          isNull(messageRequest.deletedAt)
-        )
-      );
+      .where(and(lt(messageRequest.createdAt, threshold), isNull(messageRequest.deletedAt)));
 
     const estimatedCount = countResult?.count ?? 0;
 
@@ -80,12 +72,7 @@ export async function POST(request: Request) {
         deletedAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(
-        and(
-          lt(messageRequest.createdAt, threshold),
-          isNull(messageRequest.deletedAt)
-        )
-      )
+      .where(and(lt(messageRequest.createdAt, threshold), isNull(messageRequest.deletedAt)))
       .returning({ id: messageRequest.id });
 
     const deletedCount = result.length;
@@ -144,10 +131,7 @@ export async function GET(request: Request) {
     const daysAgo = parseInt(url.searchParams.get("daysAgo") || "7", 10);
 
     if (![7, 30, 90].includes(daysAgo)) {
-      return Response.json(
-        { error: "无效的清理范围，请选择 7、30 或 90 天" },
-        { status: 400 }
-      );
+      return Response.json({ error: "无效的清理范围，请选择 7、30 或 90 天" }, { status: 400 });
     }
 
     // 3. 计算时间阈值并查询
@@ -157,12 +141,7 @@ export async function GET(request: Request) {
     const [result] = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(messageRequest)
-      .where(
-        and(
-          lt(messageRequest.createdAt, threshold),
-          isNull(messageRequest.deletedAt)
-        )
-      );
+      .where(and(lt(messageRequest.createdAt, threshold), isNull(messageRequest.deletedAt)));
 
     return Response.json({
       count: result?.count ?? 0,
@@ -174,9 +153,6 @@ export async function GET(request: Request) {
       error: error instanceof Error ? error.message : String(error),
     });
 
-    return Response.json(
-      { error: "查询失败", count: 0 },
-      { status: 500 }
-    );
+    return Response.json({ error: "查询失败", count: 0 }, { status: 500 });
   }
 }

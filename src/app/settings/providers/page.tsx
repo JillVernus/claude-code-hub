@@ -57,10 +57,7 @@ export default async function SettingsProvidersPage() {
         </TabsContent>
 
         <TabsContent value="analytics" className="mt-6">
-          <ProviderAnalyticsView
-            initialAnalytics={analytics}
-            initialSummary={summary}
-          />
+          <ProviderAnalyticsView initialAnalytics={analytics} initialSummary={summary} />
         </TabsContent>
 
         <TabsContent value="realtime-schedule" className="mt-6">

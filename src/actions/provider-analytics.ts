@@ -7,11 +7,7 @@ import {
   getProviderAnalytics as getProviderAnalyticsFromDB,
   getAnalyticsSummary,
 } from "@/repository/provider-analytics";
-import {
-  getScheduleLogs,
-  getScheduleLogById,
-  countScheduleLogs,
-} from "@/repository/schedule-logs";
+import { getScheduleLogs, getScheduleLogById, countScheduleLogs } from "@/repository/schedule-logs";
 import { AutoScheduler } from "@/lib/scheduler/auto-scheduler";
 import { updateProvider } from "@/repository/provider";
 import type { ActionResult } from "./types";
@@ -47,8 +43,7 @@ export async function getProvidersAnalytics(): Promise<
     };
   } catch (error) {
     logger.error("获取供应商分析数据失败:", error);
-    const message =
-      error instanceof Error ? error.message : "获取供应商分析数据失败";
+    const message = error instanceof Error ? error.message : "获取供应商分析数据失败";
     return { ok: false, error: message };
   }
 }
@@ -86,8 +81,7 @@ export async function previewAutoSchedule(): Promise<
     };
   } catch (error) {
     logger.error("预览调度方案失败:", error);
-    const message =
-      error instanceof Error ? error.message : "预览调度方案失败";
+    const message = error instanceof Error ? error.message : "预览调度方案失败";
     return { ok: false, error: message };
   }
 }
@@ -170,8 +164,7 @@ export async function getScheduleHistory(
     };
   } catch (error) {
     logger.error("获取调度历史失败:", error);
-    const message =
-      error instanceof Error ? error.message : "获取调度历史失败";
+    const message = error instanceof Error ? error.message : "获取调度历史失败";
     return { ok: false, error: message };
   }
 }
@@ -179,9 +172,7 @@ export async function getScheduleHistory(
 /**
  * 获取调度日志详情
  */
-export async function getScheduleLogDetail(
-  logId: number
-): Promise<ActionResult<ScheduleLog>> {
+export async function getScheduleLogDetail(logId: number): Promise<ActionResult<ScheduleLog>> {
   try {
     const session = await getSession();
     if (!session || session.user.role !== "admin") {
@@ -199,8 +190,7 @@ export async function getScheduleLogDetail(
     };
   } catch (error) {
     logger.error("获取调度日志详情失败:", error);
-    const message =
-      error instanceof Error ? error.message : "获取调度日志详情失败";
+    const message = error instanceof Error ? error.message : "获取调度日志详情失败";
     return { ok: false, error: message };
   }
 }
@@ -208,9 +198,7 @@ export async function getScheduleLogDetail(
 /**
  * 手动重置供应商到基准值
  */
-export async function resetProviderToBaseline(
-  providerId: number
-): Promise<ActionResult> {
+export async function resetProviderToBaseline(providerId: number): Promise<ActionResult> {
   try {
     const session = await getSession();
     if (!session || session.user.role !== "admin") {
@@ -225,10 +213,7 @@ export async function resetProviderToBaseline(
       return { ok: false, error: "供应商不存在" };
     }
 
-    if (
-      provider.baseWeight === null ||
-      provider.basePriority === null
-    ) {
+    if (provider.baseWeight === null || provider.basePriority === null) {
       return { ok: false, error: "供应商没有设置基准值" };
     }
 

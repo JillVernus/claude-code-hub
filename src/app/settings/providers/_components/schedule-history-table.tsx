@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,11 +30,7 @@ interface ScheduleHistoryTableProps {
 
 export function ScheduleHistoryTable({ logs }: ScheduleHistoryTableProps) {
   if (logs.length === 0) {
-    return (
-      <div className="text-center text-muted-foreground py-8">
-        暂无调度记录
-      </div>
-    );
+    return <div className="text-center text-muted-foreground py-8">暂无调度记录</div>;
   }
 
   return (
@@ -96,7 +99,9 @@ export function ScheduleHistoryTable({ logs }: ScheduleHistoryTableProps) {
 
 // 日志详情对话框
 function ScheduleLogDetailDialog({ log }: { log: ScheduleLog }) {
-  const [filter, setFilter] = React.useState<"all" | "changed" | "promote" | "demote" | "recover">("changed");
+  const [filter, setFilter] = React.useState<"all" | "changed" | "promote" | "demote" | "recover">(
+    "changed"
+  );
 
   const filteredDecisions = React.useMemo(() => {
     if (filter === "all") return log.decisions;
@@ -118,7 +123,8 @@ function ScheduleLogDetailDialog({ log }: { log: ScheduleLog }) {
         <DialogHeader>
           <DialogTitle>调度日志详情</DialogTitle>
           <DialogDescription>
-            执行时间: {format(new Date(log.executionTime), "yyyy年MM月dd日 HH:mm:ss", { locale: zhCN })}
+            执行时间:{" "}
+            {format(new Date(log.executionTime), "yyyy年MM月dd日 HH:mm:ss", { locale: zhCN })}
             {log.dryRun && " (预演模式)"}
           </DialogDescription>
         </DialogHeader>
@@ -174,14 +180,9 @@ function ScheduleLogDetailDialog({ log }: { log: ScheduleLog }) {
 
           {/* 决策列表 */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-base">
-              详细决策 ({filteredDecisions.length} 条)
-            </h4>
+            <h4 className="font-semibold text-base">详细决策 ({filteredDecisions.length} 条)</h4>
             {filteredDecisions.map((decision) => (
-              <div
-                key={decision.providerId}
-                className="border rounded-lg p-4 space-y-4 bg-card"
-              >
+              <div key={decision.providerId} className="border rounded-lg p-4 space-y-4 bg-card">
                 {/* 供应商信息和操作 */}
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-2">
@@ -219,11 +220,20 @@ function ScheduleLogDetailDialog({ log }: { log: ScheduleLog }) {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">性能得分:</span>
-                        <span className="font-mono">{decision.beforeState.performanceScore.toFixed(2)}</span>
+                        <span className="font-mono">
+                          {decision.beforeState.performanceScore.toFixed(2)}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">熔断器:</span>
-                        <Badge variant={decision.beforeState.circuitState === "closed" ? "default" : "destructive"} className="text-xs">
+                        <Badge
+                          variant={
+                            decision.beforeState.circuitState === "closed"
+                              ? "default"
+                              : "destructive"
+                          }
+                          className="text-xs"
+                        >
                           {decision.beforeState.circuitState}
                         </Badge>
                       </div>
@@ -239,8 +249,15 @@ function ScheduleLogDetailDialog({ log }: { log: ScheduleLog }) {
                         <span className="font-mono font-semibold">
                           {decision.afterState.weight}
                           {decision.afterState.weight !== decision.beforeState.weight && (
-                            <span className={decision.afterState.weight > decision.beforeState.weight ? "text-green-600" : "text-red-600"}>
-                              {" "}({decision.afterState.weight > decision.beforeState.weight ? "+" : ""}
+                            <span
+                              className={
+                                decision.afterState.weight > decision.beforeState.weight
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }
+                            >
+                              {" "}
+                              ({decision.afterState.weight > decision.beforeState.weight ? "+" : ""}
                               {decision.afterState.weight - decision.beforeState.weight})
                             </span>
                           )}
@@ -251,8 +268,18 @@ function ScheduleLogDetailDialog({ log }: { log: ScheduleLog }) {
                         <span className="font-mono font-semibold">
                           {decision.afterState.priority}
                           {decision.afterState.priority !== decision.beforeState.priority && (
-                            <span className={decision.afterState.priority > decision.beforeState.priority ? "text-green-600" : "text-red-600"}>
-                              {" "}({decision.afterState.priority > decision.beforeState.priority ? "+" : ""}
+                            <span
+                              className={
+                                decision.afterState.priority > decision.beforeState.priority
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }
+                            >
+                              {" "}
+                              (
+                              {decision.afterState.priority > decision.beforeState.priority
+                                ? "+"
+                                : ""}
                               {decision.afterState.priority - decision.beforeState.priority})
                             </span>
                           )}
@@ -260,7 +287,9 @@ function ScheduleLogDetailDialog({ log }: { log: ScheduleLog }) {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">性能得分:</span>
-                        <span className="font-mono">{decision.afterState.performanceScore.toFixed(2)}</span>
+                        <span className="font-mono">
+                          {decision.afterState.performanceScore.toFixed(2)}
+                        </span>
                       </div>
                       {decision.afterState.adjustmentReason && (
                         <div className="pt-1">
@@ -362,5 +391,9 @@ function ActionBadge({ action }: { action: string }) {
   };
   const config = variants[action as keyof typeof variants];
   if (!config) return null;
-  return <Badge variant={config.variant} className="ml-2">{config.label}</Badge>;
+  return (
+    <Badge variant={config.variant} className="ml-2">
+      {config.label}
+    </Badge>
+  );
 }

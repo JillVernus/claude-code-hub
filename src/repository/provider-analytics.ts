@@ -149,19 +149,12 @@ export async function getAnalyticsSummary(
     };
   }
 
-  const totalRequests = analytics.reduce(
-    (sum, a) => sum + a.todayRequests,
-    0
-  );
-  const avgErrorRate =
-    analytics.reduce((sum, a) => sum + a.todayErrorRate, 0) /
-    analytics.length;
+  const totalRequests = analytics.reduce((sum, a) => sum + a.todayRequests, 0);
+  const avgErrorRate = analytics.reduce((sum, a) => sum + a.todayErrorRate, 0) / analytics.length;
   const avgResponseTime =
-    analytics.reduce((sum, a) => sum + a.todayAvgResponseTime, 0) /
-    analytics.length;
+    analytics.reduce((sum, a) => sum + a.todayAvgResponseTime, 0) / analytics.length;
   const avgPerformanceScore =
-    analytics.reduce((sum, a) => sum + a.performanceScore, 0) /
-    analytics.length;
+    analytics.reduce((sum, a) => sum + a.performanceScore, 0) / analytics.length;
 
   return {
     totalRequests,

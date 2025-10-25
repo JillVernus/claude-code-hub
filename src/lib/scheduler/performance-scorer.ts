@@ -1,4 +1,4 @@
-import type { ProviderMetrics } from '@/types/schedule';
+import type { ProviderMetrics } from "@/types/schedule";
 
 /**
  * 供应商性能评分器
@@ -92,7 +92,7 @@ export class PerformanceScorer {
     } else if (percentage < 0) {
       return `${percentage}%`;
     } else {
-      return '0%';
+      return "0%";
     }
   }
 

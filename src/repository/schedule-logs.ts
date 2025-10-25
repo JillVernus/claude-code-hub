@@ -85,9 +85,7 @@ export async function getScheduleLogs(
 /**
  * 获取单条调度日志详情
  */
-export async function getScheduleLogById(
-  id: number
-): Promise<ScheduleLog | null> {
+export async function getScheduleLogById(id: number): Promise<ScheduleLog | null> {
   try {
     const [log] = await db
       .select()
@@ -121,9 +119,7 @@ export async function getScheduleLogById(
  */
 export async function countScheduleLogs(): Promise<number> {
   try {
-    const result = await db
-      .select({ count: providerScheduleLogs.id })
-      .from(providerScheduleLogs);
+    const result = await db.select({ count: providerScheduleLogs.id }).from(providerScheduleLogs);
 
     return result.length;
   } catch (error) {

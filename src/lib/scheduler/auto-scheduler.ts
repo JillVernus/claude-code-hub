@@ -1,9 +1,9 @@
-import { findProviderList, updateProvider } from '@/repository/provider';
-import { getProviderAnalytics } from '@/repository/provider-analytics';
-import { createScheduleLog } from '@/repository/schedule-logs';
-import { getCircuitState, isCircuitOpen } from '@/lib/circuit-breaker';
-import { PerformanceScorer } from './performance-scorer';
-import { logger } from '@/lib/logger';
+import { findProviderList, updateProvider } from "@/repository/provider";
+import { getProviderAnalytics } from "@/repository/provider-analytics";
+import { createScheduleLog } from "@/repository/schedule-logs";
+import { getCircuitState, isCircuitOpen } from "@/lib/circuit-breaker";
+import { PerformanceScorer } from "./performance-scorer";
+import { logger } from "@/lib/logger";
 import type {
   ScheduleDecision,
   ScheduleResult,
@@ -11,8 +11,8 @@ import type {
   ScheduleSummary,
   CircuitState,
   ProviderAnalytics,
-} from '@/types/schedule';
-import type { Provider } from '@/types/provider';
+} from "@/types/schedule";
+import type { Provider } from "@/types/provider";
 
 /**
  * 自动调度器
@@ -30,11 +30,11 @@ export class AutoScheduler {
    */
   static async execute(
     dryRun: boolean = false,
-    executedBy: string = 'auto',
+    executedBy: string = "auto",
     config?: ScheduleConfig
   ): Promise<ScheduleResult> {
     try {
-      logger.info('[AutoScheduler] Starting schedule execution', {
+      logger.info("[AutoScheduler] Starting schedule execution", {
         dryRun,
         executedBy,
       });
@@ -54,14 +54,9 @@ export class AutoScheduler {
       }
 
       // 5. 记录日志
-      const logId = await this.logExecution(
-        decisions,
-        summary,
-        executedBy,
-        dryRun
-      );
+      const logId = await this.logExecution(decisions, summary, executedBy, dryRun);
 
-      logger.info('[AutoScheduler] Schedule execution completed', {
+      logger.info("[AutoScheduler] Schedule execution completed", {
         dryRun,
         logId,
         affectedCount: summary.promoted + summary.demoted + summary.recovered,
@@ -72,13 +67,12 @@ export class AutoScheduler {
         logId,
         totalProviders: decisions.length,
         analyzedProviders: decisions.filter((d) => d.confidence >= 50).length,
-        affectedProviders:
-          summary.promoted + summary.demoted + summary.recovered,
+        affectedProviders: summary.promoted + summary.demoted + summary.recovered,
         decisions,
         summary,
       };
     } catch (error) {
-      logger.error('[AutoScheduler] Execution failed', { error });
+      logger.error("[AutoScheduler] Execution failed", { error });
       return {
         ok: false,
         totalProviders: 0,
@@ -92,7 +86,7 @@ export class AutoScheduler {
           recovered: 0,
           circuitOpen: 0,
         },
-        error: error instanceof Error ? error.message : '调度执行失败',
+        error: error instanceof Error ? error.message : "调度执行失败",
       };
     }
   }
@@ -100,9 +94,7 @@ export class AutoScheduler {
   /**
    * 生成调度决策
    */
-  private static async generateDecisions(
-    config: ScheduleConfig
-  ): Promise<ScheduleDecision[]> {
+  private static async generateDecisions(config: ScheduleConfig): Promise<ScheduleDecision[]> {
     // 1. 获取所有供应商和性能数据
     const [providers, analyticsData] = await Promise.all([
       findProviderList(1000, 0), // 获取所有供应商
@@ -110,9 +102,7 @@ export class AutoScheduler {
     ]);
 
     // 2. 创建分析数据映射
-    const analyticsMap = new Map(
-      analyticsData.map((a) => [a.id, a])
-    );
+    const analyticsMap = new Map(analyticsData.map((a) => [a.id, a]));
 
     // 3. 为每个供应商生成决策
     const decisions: ScheduleDecision[] = [];
@@ -131,12 +121,7 @@ export class AutoScheduler {
       const circuitState = getCircuitState(provider.id) as CircuitState;
 
       // 生成决策
-      const decision = this.applyStrategy(
-        provider,
-        analytics,
-        circuitState,
-        config
-      );
+      const decision = this.applyStrategy(provider, analytics, circuitState, config);
 
       decisions.push(decision);
     }
@@ -195,10 +180,10 @@ export class AutoScheduler {
           weight: provider.weight,
           priority: provider.priority,
           performanceScore: score,
-          adjustmentReason: '保持不变',
+          adjustmentReason: "保持不变",
         },
         metrics,
-        action: 'maintain',
+        action: "maintain",
         reason: `样本不足 (${analytics.todayRequests} 个请求, 置信度: ${confidence}%)，不参与调度`,
         confidence,
         baseline: { weight: baseWeight, priority: basePriority },
@@ -206,7 +191,7 @@ export class AutoScheduler {
     }
 
     // 熔断器打开 - 双重惩罚
-    if (circuitState === 'open') {
+    if (circuitState === "open") {
       const newWeight = Math.max(1, Math.floor(provider.weight * 0.7)); // -30%
       const newPriority = provider.priority + 2;
 
@@ -218,10 +203,10 @@ export class AutoScheduler {
           weight: newWeight,
           priority: newPriority,
           performanceScore: score,
-          adjustmentReason: '熔断器打开，双重惩罚',
+          adjustmentReason: "熔断器打开，双重惩罚",
         },
         metrics,
-        action: 'circuit_penalty',
+        action: "circuit_penalty",
         reason: `熔断器打开，应用双重惩罚 (得分: ${score.toFixed(1)}, 错误率: ${(metrics.todayErrorRate * 100).toFixed(2)}%)`,
         confidence,
         baseline: { weight: baseWeight, priority: basePriority },
@@ -229,10 +214,7 @@ export class AutoScheduler {
     }
 
     // 恢复检查：得分 > 80 且不在熔断中
-    if (
-      score > 80 &&
-      (provider.weight < baseWeight || provider.priority > basePriority)
-    ) {
+    if (score > 80 && (provider.weight < baseWeight || provider.priority > basePriority)) {
       return {
         providerId: provider.id,
         providerName: provider.name,
@@ -241,10 +223,10 @@ export class AutoScheduler {
           weight: baseWeight,
           priority: basePriority,
           performanceScore: score,
-          adjustmentReason: '性能恢复，恢复到基准配置',
+          adjustmentReason: "性能恢复，恢复到基准配置",
         },
         metrics,
-        action: 'recover',
+        action: "recover",
         reason: `性能恢复良好 (得分: ${score.toFixed(1)})，立即恢复到基准配置`,
         confidence,
         baseline: { weight: baseWeight, priority: basePriority },
@@ -265,10 +247,10 @@ export class AutoScheduler {
           weight: newWeight,
           priority: newPriority,
           performanceScore: score,
-          adjustmentReason: '性能优秀，提升权重和优先级',
+          adjustmentReason: "性能优秀，提升权重和优先级",
         },
         metrics,
-        action: 'promote',
+        action: "promote",
         reason: `性能优秀 (得分: ${score.toFixed(1)}, 错误率: ${(metrics.todayErrorRate * 100).toFixed(2)}%, 响应时间: ${metrics.todayAvgResponseTime.toFixed(0)}ms)，提升配置`,
         confidence,
         baseline: { weight: baseWeight, priority: basePriority },
@@ -286,10 +268,10 @@ export class AutoScheduler {
           weight: newWeight,
           priority: newPriority,
           performanceScore: score,
-          adjustmentReason: '性能不佳，降低权重和优先级',
+          adjustmentReason: "性能不佳，降低权重和优先级",
         },
         metrics,
-        action: 'demote',
+        action: "demote",
         reason: `性能不佳 (得分: ${score.toFixed(1)}, 错误率: ${(metrics.todayErrorRate * 100).toFixed(2)}%, 响应时间: ${metrics.todayAvgResponseTime.toFixed(0)}ms)，降低配置`,
         confidence,
         baseline: { weight: baseWeight, priority: basePriority },
@@ -304,10 +286,10 @@ export class AutoScheduler {
           weight: provider.weight,
           priority: provider.priority,
           performanceScore: score,
-          adjustmentReason: '保持不变',
+          adjustmentReason: "保持不变",
         },
         metrics,
-        action: 'maintain',
+        action: "maintain",
         reason: `性能良好 (得分: ${score.toFixed(1)})，保持当前配置`,
         confidence,
         baseline: { weight: baseWeight, priority: basePriority },
@@ -318,14 +300,10 @@ export class AutoScheduler {
   /**
    * 执行调度（实际修改数据库）
    */
-  private static async applyDecisions(
-    decisions: ScheduleDecision[]
-  ): Promise<void> {
-    const updates = decisions.filter(
-      (d) => d.action !== 'maintain' && d.confidence >= 50
-    );
+  private static async applyDecisions(decisions: ScheduleDecision[]): Promise<void> {
+    const updates = decisions.filter((d) => d.action !== "maintain" && d.confidence >= 50);
 
-    logger.info('[AutoScheduler] Applying decisions', {
+    logger.info("[AutoScheduler] Applying decisions", {
       totalDecisions: decisions.length,
       updates: updates.length,
     });
@@ -343,7 +321,7 @@ export class AutoScheduler {
           : {}),
       });
 
-      logger.debug('[AutoScheduler] Provider updated', {
+      logger.debug("[AutoScheduler] Provider updated", {
         providerId: decision.providerId,
         providerName: decision.providerName,
         action: decision.action,
@@ -368,8 +346,7 @@ export class AutoScheduler {
       dry_run: dryRun,
       total_providers: decisions.length,
       analyzed_providers: decisions.filter((d) => d.confidence >= 50).length,
-      affected_providers:
-        summary.promoted + summary.demoted + summary.recovered,
+      affected_providers: summary.promoted + summary.demoted + summary.recovered,
       decisions,
       summary,
     });
@@ -380,9 +357,7 @@ export class AutoScheduler {
   /**
    * 计算汇总信息
    */
-  private static calculateSummary(
-    decisions: ScheduleDecision[]
-  ): ScheduleSummary {
+  private static calculateSummary(decisions: ScheduleDecision[]): ScheduleSummary {
     const summary: ScheduleSummary = {
       promoted: 0,
       demoted: 0,
@@ -393,19 +368,19 @@ export class AutoScheduler {
 
     for (const decision of decisions) {
       switch (decision.action) {
-        case 'promote':
+        case "promote":
           summary.promoted++;
           break;
-        case 'demote':
+        case "demote":
           summary.demoted++;
           break;
-        case 'maintain':
+        case "maintain":
           summary.maintained++;
           break;
-        case 'recover':
+        case "recover":
           summary.recovered++;
           break;
-        case 'circuit_penalty':
+        case "circuit_penalty":
           summary.circuitOpen++;
           break;
       }
@@ -422,7 +397,7 @@ export class AutoScheduler {
     // 暂时使用默认配置
     return {
       enableAutoSchedule: false,
-      scheduleTime: '02:00',
+      scheduleTime: "02:00",
       minSampleSize: 10,
       scheduleWindowHours: 24,
     };

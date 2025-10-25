@@ -90,7 +90,7 @@ export function toSystemSettings(dbSettings: any): SystemSettings {
   return {
     id: dbSettings?.id ?? 0,
     siteTitle: dbSettings?.siteTitle ?? "Claude Code Hub",
-    allowGlobalUsageView: dbSettings?.allowGlobalUsageView ?? false,  // ✅ 修复：与 schema 默认值一致
+    allowGlobalUsageView: dbSettings?.allowGlobalUsageView ?? false, // ✅ 修复：与 schema 默认值一致
     // 定时调度配置
     enableAutoSchedule: dbSettings?.enableAutoSchedule ?? false,
     scheduleTime: dbSettings?.scheduleTime ?? "02:00",
