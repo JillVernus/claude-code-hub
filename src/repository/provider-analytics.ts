@@ -27,7 +27,7 @@ export async function getProviderAnalytics(): Promise<ProviderAnalytics[]> {
             THEN 1 ELSE 0 END
           ) as error_count
         FROM message_request
-        WHERE created_at >= CURRENT_DATE AT TIME ZONE ${timezone}
+        WHERE created_at >= DATE_TRUNC('day', TIMEZONE(${timezone}, NOW()))
           AND deleted_at IS NULL
         GROUP BY provider_id
       ),
@@ -42,8 +42,8 @@ export async function getProviderAnalytics(): Promise<ProviderAnalytics[]> {
             THEN 1 ELSE 0 END
           ) as error_count
         FROM message_request
-        WHERE created_at >= (CURRENT_DATE - INTERVAL '1 day') AT TIME ZONE ${timezone}
-          AND created_at < CURRENT_DATE AT TIME ZONE ${timezone}
+        WHERE created_at >= DATE_TRUNC('day', TIMEZONE(${timezone}, NOW())) - INTERVAL '1 day'
+          AND created_at < DATE_TRUNC('day', TIMEZONE(${timezone}, NOW()))
           AND deleted_at IS NULL
         GROUP BY provider_id
       )

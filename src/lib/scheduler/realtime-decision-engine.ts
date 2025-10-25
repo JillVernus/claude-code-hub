@@ -12,7 +12,10 @@
 
 import { logger } from "@/lib/logger";
 import { MABScheduler, type MABConfig } from "./mab-algorithm";
-import { getProviderMultiWindowAnalytics } from "@/repository/provider-analytics-multiwindow";
+import {
+  getProviderMultiWindowAnalytics,
+  type ProviderMultiWindowAnalytics,
+} from "@/repository/provider-analytics-multiwindow";
 import { updateProvider } from "@/repository/provider";
 import { createScheduleLog } from "@/repository/schedule-logs";
 import { getSystemSettings } from "@/repository/system-config";
@@ -90,7 +93,7 @@ export class RealtimeDecisionEngine {
 
       // 6. 应用决策（更新数据库）
       if (!dryRun) {
-        await this.applyDecisions(decisions);
+        await this.applyDecisions(decisions, providers);
       }
 
       // 7. 记录日志
@@ -194,7 +197,10 @@ export class RealtimeDecisionEngine {
   /**
    * 应用决策（更新数据库）
    */
-  private static async applyDecisions(decisions: ScheduleDecision[]): Promise<void> {
+  private static async applyDecisions(
+    decisions: ScheduleDecision[],
+    providers: ProviderMultiWindowAnalytics[]
+  ): Promise<void> {
     // 只更新有变化的供应商
     const updates = decisions.filter(
       (d) =>
@@ -209,15 +215,16 @@ export class RealtimeDecisionEngine {
 
     for (const decision of updates) {
       try {
+        // 查找对应的供应商数据
+        const provider = providers.find((p) => p.id === decision.providerId);
+
         await updateProvider(decision.providerId, {
           weight: decision.afterState.weight,
           priority: decision.afterState.priority,
           last_schedule_time: new Date(),
-          // 首次调度时保存基准值
-          ...(decision.baseline.weight === decision.beforeState.weight
-            ? { base_weight: decision.beforeState.weight }
-            : {}),
-          ...(decision.baseline.priority === decision.beforeState.priority
+          // ✅ 正确：只在基准值为 null 时设置（避免每次调度都重写）
+          ...(provider?.baseWeight === null ? { base_weight: decision.beforeState.weight } : {}),
+          ...(provider?.basePriority === null
             ? { base_priority: decision.beforeState.priority }
             : {}),
         });

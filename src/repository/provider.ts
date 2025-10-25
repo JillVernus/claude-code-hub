@@ -302,20 +302,61 @@ export async function getProviderStatistics(): Promise<
 /**
  * 重置所有启用的供应商到基准配置
  * 用于开启实时调度时初始化所有供应商
+ *
+ * 自动扩大权重：如果 weight < 10，扩大到 100 倍（解决整数截断问题）
  */
 export async function resetAllProvidersToBaseline(): Promise<number> {
   try {
     logger.info("[Provider] Resetting all providers to baseline");
 
     // 更新所有启用的供应商
+    // 策略：
+    // 1. 如果 weight < 10，扩大到 100 倍（解决整数截断问题）
+    // 2. 重置 weight 和 priority 到基准值
+    // 3. 如果基准值不存在，使用当前值（可能已扩大）作为基准
     const result = await db
       .update(providers)
       .set({
-        weight: sql`COALESCE(${providers.baseWeight}, ${providers.weight})`,
+        // 权重重置逻辑：
+        // - 如果有基准权重且 >= 10：使用基准权重
+        // - 如果有基准权重但 < 10：扩大 100 倍
+        // - 如果无基准权重，当前权重 >= 10：使用当前权重
+        // - 如果无基准权重，当前权重 < 10：扩大 100 倍
+        weight: sql`
+          CASE
+            WHEN ${providers.baseWeight} IS NOT NULL AND ${providers.baseWeight} >= 10
+              THEN ${providers.baseWeight}
+            WHEN ${providers.baseWeight} IS NOT NULL AND ${providers.baseWeight} < 10
+              THEN ${providers.baseWeight} * 100
+            WHEN ${providers.weight} >= 10
+              THEN ${providers.weight}
+            ELSE ${providers.weight} * 100
+          END
+        `,
+
+        // 优先级重置逻辑：直接使用基准值或当前值
         priority: sql`COALESCE(${providers.basePriority}, ${providers.priority})`,
-        // 如果没有基准值，则将当前值设为基准值
-        baseWeight: sql`COALESCE(${providers.baseWeight}, ${providers.weight})`,
+
+        // 基准值更新逻辑：
+        // - 如果已有基准权重且 >= 10：保持不变
+        // - 如果已有基准权重但 < 10：扩大 100 倍
+        // - 如果无基准权重，当前权重 >= 10：使用当前权重
+        // - 如果无基准权重，当前权重 < 10：扩大 100 倍
+        baseWeight: sql`
+          CASE
+            WHEN ${providers.baseWeight} IS NOT NULL AND ${providers.baseWeight} >= 10
+              THEN ${providers.baseWeight}
+            WHEN ${providers.baseWeight} IS NOT NULL AND ${providers.baseWeight} < 10
+              THEN ${providers.baseWeight} * 100
+            WHEN ${providers.weight} >= 10
+              THEN ${providers.weight}
+            ELSE ${providers.weight} * 100
+          END
+        `,
+
+        // 基准优先级：使用基准值或当前值
         basePriority: sql`COALESCE(${providers.basePriority}, ${providers.priority})`,
+
         lastScheduleTime: new Date(),
         updatedAt: new Date(),
       })
@@ -324,6 +365,7 @@ export async function resetAllProvidersToBaseline(): Promise<number> {
 
     logger.info("[Provider] Reset completed", {
       affectedCount: result.length,
+      message: "Weights < 10 have been scaled to 100x",
     });
 
     return result.length;
@@ -335,6 +377,8 @@ export async function resetAllProvidersToBaseline(): Promise<number> {
 
 /**
  * 重置单个供应商到基准配置
+ *
+ * 自动扩大权重：如果 weight < 10，扩大到 100 倍（解决整数截断问题）
  */
 export async function resetProviderToBaseline(id: number): Promise<Provider | null> {
   try {
@@ -343,7 +387,18 @@ export async function resetProviderToBaseline(id: number): Promise<Provider | nu
       return null;
     }
 
-    const baseWeight = provider.baseWeight ?? provider.weight;
+    // 计算基准权重（扩大到 100 倍，如果需要）
+    let baseWeight = provider.baseWeight ?? provider.weight;
+    if (baseWeight < 10) {
+      baseWeight = baseWeight * 100;
+      logger.info("[Provider] Scaling base weight to 100x", {
+        providerId: id,
+        oldWeight: provider.baseWeight ?? provider.weight,
+        newWeight: baseWeight,
+      });
+    }
+
+    // 优先级不需要扩大
     const basePriority = provider.basePriority ?? provider.priority;
 
     return await updateProvider(id, {

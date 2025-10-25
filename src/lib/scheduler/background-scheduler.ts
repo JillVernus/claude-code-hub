@@ -12,6 +12,8 @@ import { logger } from "@/lib/logger";
 import { RealtimeDecisionEngine } from "./realtime-decision-engine";
 import { getSystemSettings } from "@/repository/system-config";
 import type { MABConfig } from "./mab-algorithm";
+import { db } from "@/drizzle/db";
+import { sql } from "drizzle-orm";
 
 /**
  * 后台调度器状态
@@ -162,6 +164,39 @@ class BackgroundScheduler {
   }
 
   /**
+   * 检查最近是否有请求
+   *
+   * @param intervalSeconds 调度间隔（秒）
+   * @returns 如果最近有请求返回 true，否则返回 false
+   */
+  private async hasRecentRequests(intervalSeconds: number): Promise<boolean> {
+    try {
+      const result = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT 1
+          FROM message_request
+          WHERE created_at >= NOW() - ${intervalSeconds}::integer * INTERVAL '1 second'
+            AND deleted_at IS NULL
+        ) as has_requests
+      `);
+
+      const hasRequests =
+        (result[0] as { has_requests?: boolean })?.has_requests ?? false;
+
+      logger.trace("[BackgroundScheduler] Recent requests check", {
+        intervalSeconds,
+        hasRequests,
+      });
+
+      return hasRequests;
+    } catch (error) {
+      logger.error("[BackgroundScheduler] Failed to check recent requests", { error });
+      // Fail open: 查询失败时仍然执行调度，不影响服务可用性
+      return true;
+    }
+  }
+
+  /**
    * 执行调度
    */
   private async executeSchedule(): Promise<void> {
@@ -175,6 +210,21 @@ class BackgroundScheduler {
         logger.info("[BackgroundScheduler] Realtime schedule disabled, stopping");
         this.stop();
         return;
+      }
+
+      // ✅ 检查最近是否有请求
+      const intervalSeconds = settings.scheduleIntervalSeconds ?? 30;
+      const hasRequests = await this.hasRecentRequests(intervalSeconds);
+
+      if (!hasRequests) {
+        logger.debug(
+          `[BackgroundScheduler] No requests in the last ${intervalSeconds}s, skipping schedule and log`
+        );
+
+        // 仅更新下一次执行时间，不更新 lastExecutionTime 和 totalExecutions
+        this.state.nextExecutionTime = new Date(Date.now() + intervalSeconds * 1000);
+
+        return; // 跳过调度和日志记录
       }
 
       // 构建 MAB 配置
